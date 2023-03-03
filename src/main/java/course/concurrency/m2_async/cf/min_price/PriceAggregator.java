@@ -23,14 +23,11 @@ public class PriceAggregator {
     }
 
     public double getMinPrice(long itemId) {
-        List<CompletableFuture<Double>> completableFutures =
-                shopIds.stream()
+
+        return Stream.of(shopIds.stream()
                         .map(shopId -> CompletableFuture.supplyAsync(() -> priceRetriever.getPrice(itemId, shopId))
                                 .completeOnTimeout(Double.NaN, 2, TimeUnit.SECONDS)
-                                .exceptionally(ex -> Double.NaN))
-                        .collect(Collectors.toList());
-
-        return Stream.of(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).
+                                .exceptionally(ex -> Double.NaN)).toArray(CompletableFuture[]::new)).
                 map(f -> (double) f.join())
                 .filter(d -> d > 0)
                 .min(Double::compareTo)
