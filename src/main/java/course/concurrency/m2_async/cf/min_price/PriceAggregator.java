@@ -31,9 +31,7 @@ public class PriceAggregator {
                         .collect(Collectors.toList());
 
         return Stream.of(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).
-                map(f -> {
-                    return (double) f.join();
-                })
+                map(f -> (double) f.join())
                 .filter(d -> d > 0)
                 .min(Double::compareTo)
                 .orElse(Double.NaN);
