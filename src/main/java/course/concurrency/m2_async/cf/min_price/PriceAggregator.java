@@ -26,19 +26,14 @@ public class PriceAggregator {
         List<CompletableFuture<Double>> completableFutures =
                 shopIds.stream()
                         .map(shopId -> CompletableFuture.supplyAsync(() -> priceRetriever.getPrice(itemId, shopId))
+                                .completeOnTimeout(Double.NaN, 2, TimeUnit.SECONDS)
                                 .exceptionally(ex -> Double.NaN))
                         .collect(Collectors.toList());
 
         return Stream.of(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).
                 map(f -> {
-                    try {
-                        return  (Double) f.get(1, TimeUnit.SECONDS);
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                        //throw new RuntimeException(e);
-                        return Double.NaN;
-                    }
+                    return (double) f.join();
                 })
-                .filter(Objects::nonNull)
                 .filter(d -> d > 0)
                 .min(Double::compareTo)
                 .orElse(Double.NaN);
