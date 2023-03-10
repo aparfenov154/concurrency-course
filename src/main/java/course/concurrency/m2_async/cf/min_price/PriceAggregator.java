@@ -29,14 +29,9 @@ public class PriceAggregator {
                         .exceptionally(ex -> null))
                 .collect(Collectors.toList());
 
-        List<Double> doubles = completableFutures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList());
-
         return completableFutures.stream()
                 .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
-                //.filter(d -> d > 0)
                 .min(Double::compareTo)
                 .orElse(Double.NaN);
     }
