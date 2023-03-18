@@ -2,12 +2,15 @@ package course.concurrency.m2_async.cf.min_price;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class PriceAggregator {
+
+
+    private ExecutorService executor = Executors.newFixedThreadPool(50);
 
     private PriceRetriever priceRetriever = new PriceRetriever();
 
@@ -24,7 +27,7 @@ public class PriceAggregator {
     public double getMinPrice(long itemId) {
 
         List<CompletableFuture<Double>> completableFutures = shopIds.stream()
-                .map(shopId -> CompletableFuture.supplyAsync(() -> priceRetriever.getPrice(itemId, shopId), Executors.newFixedThreadPool(50))
+                .map(shopId -> CompletableFuture.supplyAsync(() -> priceRetriever.getPrice(itemId, shopId), executor)
                         .completeOnTimeout(null, 2900, TimeUnit.MILLISECONDS)
                         .exceptionally(ex -> null))
                 .collect(Collectors.toList());
